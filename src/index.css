@@ -13,6 +13,20 @@ body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: "Inter", sans-serif;
+}
+h1,
+h2,
+h3 {
+  font-family: "Poppins", sans-serif;
+}
+.code {
+  font-family: "Fira Code", monospace;
+}
+.logo {
+  font-family: "Fruktur", system-ui;
+  font-weight: 400;
+  font-style: italic;
 }
 
 @media (prefers-color-scheme: light) {

@@ -1,5 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { FaBars, FaTimes } from "react-icons/fa";
+import { gsap } from "gsap";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 const navLinks = [
   { name: "Home", href: "#home" },
@@ -12,36 +16,56 @@ const navLinks = [
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const navRef = useRef(null);
 
+  /* AOS */
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    AOS.init({ once: true, duration: 700, easing: "ease-out-cubic" });
+  }, []);
+
+  /* Scroll effect */
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  /* GSAP entrance */
+  useEffect(() => {
+    gsap.fromTo(
+      navRef.current,
+      { y: -80, opacity: 0 },
+      { y: 0, opacity: 1, duration: 1, ease: "power3.out" },
+    );
   }, []);
 
   return (
     <header
-      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+      ref={navRef}
+      className={`fixed top-4 inset-x-0 mx-auto z-50
+      w-[95%] max-w-6xl
+      transition-all duration-300
+      ${
         scrolled
-          ? "bg-base-300/80 backdrop-blur border-b border-gray-700 shadow-lg"
-          : "bg-transparent"
-      }`}
+          ? "bg-base-300/80 backdrop-blur border border-gray-700 shadow-xl"
+          : "bg-base-300/60 backdrop-blur border border-gray-800"
+      }
+      rounded-2xl`}
     >
-      <nav className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <nav className="px-6 h-16 flex items-center justify-between">
         {/* Logo */}
-        <a
+        <motion.a
           href="#home"
-          className="text-xl font-bold tracking-wide text-primary"
+          whileHover={{ scale: 1.05 }}
+          className="text-lg md:text-2xl font-extrabold tracking-wide text-primary logo"
         >
           Abdullah<span className="text-white">.</span>
-        </a>
+        </motion.a>
 
         {/* Desktop Menu */}
-        <ul className="hidden md:flex items-center gap-8 text-sm">
-          {navLinks.map((link) => (
-            <li key={link.name}>
+        <ul className="hidden md:flex items-center gap-10 text-sm">
+          {navLinks.map((link, i) => (
+            <li key={link.name} data-aos="fade-down" data-aos-delay={i * 80}>
               <a
                 href={link.href}
                 className="relative text-gray-300 hover:text-primary transition
@@ -54,30 +78,43 @@ const Navbar = () => {
           ))}
         </ul>
 
-        {/* Mobile Button */}
+        {/* Mobile Toggle */}
         <button onClick={() => setOpen(!open)} className="md:hidden text-xl">
           {open ? <FaTimes /> : <FaBars />}
         </button>
       </nav>
 
       {/* Mobile Menu */}
-      {open && (
-        <div className="md:hidden bg-base-300 border-t border-gray-700">
-          <ul className="flex flex-col items-center gap-6 py-6">
-            {navLinks.map((link) => (
-              <li key={link.name}>
-                <a
-                  href={link.href}
-                  onClick={() => setOpen(false)}
-                  className="text-gray-300 hover:text-primary transition text-lg"
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="md:hidden border-t border-gray-700 bg-base-300 rounded-b-2xl"
+          >
+            <ul className="flex flex-col items-center gap-6 py-6">
+              {navLinks.map((link, i) => (
+                <motion.li
+                  key={link.name}
+                  initial={{ y: 15, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: i * 0.08 }}
                 >
-                  {link.name}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+                  <a
+                    href={link.href}
+                    onClick={() => setOpen(false)}
+                    className="text-gray-300 hover:text-primary transition text-lg"
+                  >
+                    {link.name}
+                  </a>
+                </motion.li>
+              ))}
+            </ul>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 };
